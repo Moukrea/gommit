@@ -72,7 +72,6 @@ jobs:
           npm install -g conventional-recommended-bump@7 semver
 
           CURRENT_VERSION="${{ steps.get_prev_version.outputs.prev_version }}"
-
           echo "Current version: $CURRENT_VERSION"
 
           BUMP=$(conventional-recommended-bump -p angular -l "${CURRENT_VERSION}" -r 0 || echo "none")
@@ -98,8 +97,6 @@ jobs:
       - name: Generate full changelog
         run: |
           npm install -g conventional-changelog-cli
-
-          # Generate full changelog
           conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
       - name: Upload changelog artifact
@@ -114,19 +111,21 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-
           git add CHANGELOG.md
           git commit -m "chore(release): update changelog for version ${{ steps.bump_version.outputs.new_version }}"
           git push origin main
+
+      - name: Echo changelog (dry-run)
+        if: steps.determine_dry_run.outputs.DRY_RUN == 'true' && steps.bump_version.outputs.bump != 'none'
+        run: |
+          echo "Changelog that would be committed in non-dry-run mode:"
+          cat CHANGELOG.md
 
       - name: Generate release notes
         id: generate_release_notes
         run: |
           npm install -g conventional-changelog-cli
-
-          # Generate changelog since previous tag
           conventional-changelog -p angular -r 1 -o RELEASE_NOTES.md
-
           cat RELEASE_NOTES.md
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
           cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
@@ -145,6 +144,11 @@ jobs:
           git tag ${{ steps.bump_version.outputs.new_version }}
           git push origin ${{ steps.bump_version.outputs.new_version }}
 
+      - name: Echo new tag (dry-run)
+        if: steps.determine_dry_run.outputs.DRY_RUN == 'true' && steps.bump_version.outputs.bump != 'none'
+        run: |
+          echo "Tag that would be created in non-dry-run mode: ${{ steps.bump_version.outputs.new_version }}"
+
       - name: Dry-run summary
         if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
         run: |
@@ -153,6 +157,8 @@ jobs:
             echo "- Committed and pushed updated CHANGELOG.md to main."
             echo "- Created and pushed git tag ${{ steps.bump_version.outputs.new_version }}."
             echo "- Created a release for version ${{ steps.bump_version.outputs.new_version }}."
+            echo "Release notes that would be used:"
+            cat RELEASE_NOTES.md
           else
             echo "- No version bump required; no release actions would have been taken."
           fi
@@ -215,3 +221,4 @@ jobs:
       - name: Release created
         run: |
           echo "Release ${{ needs.release.outputs.new_version }} created successfully."
+          
