@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **ci:** include binaries in releases ([355f475](https://github.com/Moukrea/gommit/commit/355f475a94cc17c113833b0c09f653244d22aea7))
+
+
+
+# [0.1.0](https://github.com/Moukrea/gommit/compare/69312527c5637b50c36248d8f00dc005f77f781a...0.1.0) (2024-10-20)
+
+
+### Bug Fixes
+
 * **ci:** binaries build issues ([2ab394f](https://github.com/Moukrea/gommit/commit/2ab394fbd2c77b21b8d0ec97f0069f95b6c18c2a))
 * **ci:** bump node version ([9c125b1](https://github.com/Moukrea/gommit/commit/9c125b1273bd7280cc71964eca68ba5607b014b0))
 * **ci:** dry run skipping most jobs ([38043c6](https://github.com/Moukrea/gommit/commit/38043c6565e12e2682d473c31aa65733ca70a71d))
