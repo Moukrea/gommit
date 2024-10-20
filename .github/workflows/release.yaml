@@ -161,7 +161,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: binaries-${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}
+          name: binaries
           path: dist/*
 
   create_release:
@@ -172,7 +172,12 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
+          name: binaries
           path: dist
+
+      - name: List files in dist
+        run: |
+          ls -R dist
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
