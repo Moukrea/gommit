@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Check if this is the initial clone
+if [ "$3" = "1" ]; then
+    # This is a clone operation
+    echo "Initial clone detected. Setting up Gommit..."
+    ./scripts/setup-hooks.sh
+else
+    # This is a normal checkout
+    ./scripts/setup-hooks.sh
+fi
