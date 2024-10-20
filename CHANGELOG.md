@@ -1,0 +1,21 @@
+#  (2024-10-20)
+
+
+### Bug Fixes
+
+* **ci:** binaries build issues ([2ab394f](https://github.com/Moukrea/gommit/commit/2ab394fbd2c77b21b8d0ec97f0069f95b6c18c2a))
+* **ci:** bump node version ([9c125b1](https://github.com/Moukrea/gommit/commit/9c125b1273bd7280cc71964eca68ba5607b014b0))
+* **ci:** dry run skipping most jobs ([38043c6](https://github.com/Moukrea/gommit/commit/38043c6565e12e2682d473c31aa65733ca70a71d))
+* **ci:** dry run variable access ([15dbcab](https://github.com/Moukrea/gommit/commit/15dbcab7a4a41ab8798524d99387f78a04eb4d07))
+* **ci:** golang version and release notes issues ([ac202ad](https://github.com/Moukrea/gommit/commit/ac202ad75e54ce6dc7386bd6f14e58014b427380))
+* **ci:** update commit and tag handling ([6ac46b3](https://github.com/Moukrea/gommit/commit/6ac46b3e1e9fdaa045f2576145ba458ad288220b))
+* **ci:** verbose dry run ([5f543f5](https://github.com/Moukrea/gommit/commit/5f543f54584cf5b8d227d62fc3eaebf6769fa344))
+* complete gommit implementation ([6931252](https://github.com/Moukrea/gommit/commit/69312527c5637b50c36248d8f00dc005f77f781a))
+
+
+### Features
+
+* **ci:** introduce automated releases ([c673b09](https://github.com/Moukrea/gommit/commit/c673b0989541bf7d9856bd9091beb2ec0bebe643))
+
+
+
