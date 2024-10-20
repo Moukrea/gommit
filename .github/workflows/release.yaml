@@ -20,9 +20,6 @@ on:
         required: false
         default: 'false'
 
-env:
-  DRY_RUN: ${{ github.event.inputs.dry_run != '' && github.event.inputs.dry_run || vars.DRY_RUN || 'false' }}
-
 jobs:
   release:
     if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -31,6 +28,7 @@ jobs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
       bump: ${{ steps.bump_version.outputs.bump }}
       release_notes: ${{ steps.generate_release_notes.outputs.release_notes }}
+      DRY_RUN: ${{ steps.determine_dry_run.outputs.DRY_RUN }}
 
     steps:
       - name: Checkout code
@@ -38,13 +36,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine DRY_RUN value
+        id: determine_dry_run
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" != "" ]; then
+            DRY_RUN="${{ github.event.inputs.dry_run }}"
+          elif [ "${{ vars.DRY_RUN }}" != "" ]; then
+            DRY_RUN="${{ vars.DRY_RUN }}"
+          else
+            DRY_RUN="false"
+          fi
+          echo "DRY_RUN=$DRY_RUN" >> $GITHUB_OUTPUT
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
 
       - name: Dry-run mode active
-        if: env.DRY_RUN == 'true'
+        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
         run: |
           echo "Dry-run mode is active. No changes will be pushed to the repository."
 
@@ -89,7 +99,7 @@ jobs:
           conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
       - name: Commit and push changelog
-        if: steps.bump_version.outputs.bump != 'none' && env.DRY_RUN != 'true'
+        if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN != 'true'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -113,13 +123,13 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Tag new version
-        if: steps.bump_version.outputs.bump != 'none' && env.DRY_RUN != 'true'
+        if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN != 'true'
         run: |
           git tag ${{ steps.bump_version.outputs.new_version }}
           git push origin ${{ steps.bump_version.outputs.new_version }}
 
       - name: Dry-run summary
-        if: env.DRY_RUN == 'true'
+        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
         run: |
           echo "Dry-run mode active. The following actions would have been performed:"
           echo "- Committed and pushed updated CHANGELOG.md to main."
@@ -127,7 +137,7 @@ jobs:
           echo "- Created a release for version ${{ steps.bump_version.outputs.new_version }}."
 
   build:
-    if: needs.release.outputs.bump != 'none' && env.DRY_RUN != 'true'
+    if: needs.release.outputs.bump != 'none' && needs.release.outputs.DRY_RUN != 'true'
     needs: release
     strategy:
       matrix:
@@ -160,7 +170,7 @@ jobs:
           path: dist/*
 
   create_release:
-    if: needs.release.outputs.bump != 'none' && env.DRY_RUN != 'true'
+    if: needs.release.outputs.bump != 'none' && needs.release.outputs.DRY_RUN != 'true'
     needs: [release, build]
     runs-on: ubuntu-latest
     steps:
