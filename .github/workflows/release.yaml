@@ -1,0 +1,181 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (true/false)'
+        required: false
+        default: 'false'
+
+env:
+  DRY_RUN: ${{ github.event.inputs.dry_run != '' && github.event.inputs.dry_run || vars.DRY_RUN || 'false' }}
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump_version.outputs.new_version }}
+      bump: ${{ steps.bump_version.outputs.bump }}
+      release_notes: ${{ steps.generate_release_notes.outputs.release_notes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Dry-run mode active
+        if: env.DRY_RUN == 'true'
+        run: |
+          echo "Dry-run mode is active. No changes will be pushed to the repository."
+
+      - name: Get previous version tag
+        id: get_prev_version
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.0.0")
+          echo "Previous tag: $TAG"
+          echo "prev_version=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Determine version bump and new version
+        id: bump_version
+        run: |
+          npm install -g conventional-recommended-bump semver
+
+          CURRENT_VERSION="${{ steps.get_prev_version.outputs.prev_version }}"
+
+          echo "Current version: $CURRENT_VERSION"
+
+          BUMP=$(conventional-recommended-bump -p angular -l "${CURRENT_VERSION}" -r 0 || echo "none")
+
+          if [ "$BUMP" = "none" ]; then
+            echo "No version bump required."
+            echo "bump=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Recommended bump: $BUMP"
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+
+          NEW_VERSION=$(semver -i $BUMP $CURRENT_VERSION)
+          echo "New version: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate full changelog
+        if: steps.bump_version.outputs.bump != 'none'
+        run: |
+          npm install -g conventional-changelog-cli
+
+          # Generate full changelog
+          conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+
+      - name: Commit and push changelog
+        if: steps.bump_version.outputs.bump != 'none' && env.DRY_RUN != 'true'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog for version ${{ steps.bump_version.outputs.new_version }}"
+          git push origin main
+
+      - name: Generate release notes
+        if: steps.bump_version.outputs.bump != 'none'
+        id: generate_release_notes
+        run: |
+          npm install -g conventional-changelog-cli
+
+          # Generate changelog since previous tag
+          conventional-changelog -p angular -r 1 -s -o RELEASE_NOTES.md
+
+          cat RELEASE_NOTES.md
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Tag new version
+        if: steps.bump_version.outputs.bump != 'none' && env.DRY_RUN != 'true'
+        run: |
+          git tag ${{ steps.bump_version.outputs.new_version }}
+          git push origin ${{ steps.bump_version.outputs.new_version }}
+
+      - name: Dry-run summary
+        if: env.DRY_RUN == 'true'
+        run: |
+          echo "Dry-run mode active. The following actions would have been performed:"
+          echo "- Committed and pushed updated CHANGELOG.md to main."
+          echo "- Created and pushed git tag ${{ steps.bump_version.outputs.new_version }}."
+          echo "- Created a release for version ${{ steps.bump_version.outputs.new_version }}."
+
+  build:
+    if: needs.release.outputs.bump != 'none' && env.DRY_RUN != 'true'
+    needs: release
+    strategy:
+      matrix:
+        bin: [gommit, gommit-integration, gommit-downloader]
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Build binary
+        run: |
+          OUTPUT_NAME="${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}"
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            OUTPUT_NAME="${OUTPUT_NAME}.exe"
+          fi
+          mkdir -p dist
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ needs.release.outputs.new_version }}'" -o dist/$OUTPUT_NAME ${{ matrix.bin }}/main.go
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: dist/*
+
+  create_release:
+    if: needs.release.outputs.bump != 'none' && env.DRY_RUN != 'true'
+    needs: [release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries
+          path: dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release.outputs.new_version }}
+          name: Release ${{ needs.release.outputs.new_version }}
+          body: ${{ needs.release.outputs.release_notes }}
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
