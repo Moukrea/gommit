@@ -46,12 +46,30 @@ jobs:
       - name: Determine version bump and new version
         id: bump_version
         run: |
-          npm install -g conventional-recommended-bump@7 semver
+          npm install -g semver
 
           CURRENT_VERSION="${{ steps.get_prev_version.outputs.prev_version }}"
           echo "Current version: $CURRENT_VERSION"
 
-          BUMP=$(conventional-recommended-bump -p angular -l "${CURRENT_VERSION}" -r 0 || echo "none")
+          # Get commits since last tag (or from the beginning if no tags)
+          if [ "$CURRENT_VERSION" = "0.0.0" ]; then
+            COMMITS=$(git log --format=%B)
+          else
+            COMMITS=$(git log $CURRENT_VERSION..HEAD --format=%B)
+          fi
+
+          # Check for breaking changes
+          if echo "$COMMITS" | grep -qE '^[^\n]+!:' || echo "$COMMITS" | grep -q 'BREAKING CHANGE:'; then
+            BUMP="major"
+          # Check for features
+          elif echo "$COMMITS" | grep -qE '^feat(\([^)]+\))?:'; then
+            BUMP="minor"
+          # Check for fixes
+          elif echo "$COMMITS" | grep -qE '^fix(\([^)]+\))?:'; then
+            BUMP="patch"
+          else
+            BUMP="none"
+          fi
 
           if [ "$BUMP" = "none" ]; then
             echo "No version bump required."
@@ -63,7 +81,15 @@ jobs:
             echo "Recommended bump: $BUMP"
             echo "bump=$BUMP" >> $GITHUB_OUTPUT
 
-            NEW_VERSION=$(semver -i $BUMP $CURRENT_VERSION)
+            # Calculate new version
+            if [ "$BUMP" = "major" ]; then
+              NEW_VERSION=$(semver -i major $CURRENT_VERSION)
+            elif [ "$BUMP" = "minor" ]; then
+              NEW_VERSION=$(semver -i minor $CURRENT_VERSION)
+            else
+              NEW_VERSION=$(semver -i patch $CURRENT_VERSION)
+            fi
+
             echo "New version: $NEW_VERSION"
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           fi
