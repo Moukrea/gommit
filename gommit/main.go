@@ -12,8 +12,6 @@ import (
 	"runtime"
 	"strings"
 	"time"
-	"unicode"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -167,7 +165,72 @@ func isRuleEnabled(config Config, ruleName string) bool {
 }
 
 func validateCommitMsg(msg string, config Config) ([]string, bool) {
-	// ... [rest of the validation logic remains unchanged]
+	var errors []string
+	needsBreakingChange := false
+
+	lines := strings.Split(msg, "\n")
+	if len(lines) == 0 {
+		errors = append(errors, "Commit message is empty")
+		return errors, needsBreakingChange
+	}
+
+	header := lines[0]
+
+	// Rule: header-format
+	if isRuleEnabled(config, "header-format") && !headerPattern.MatchString(header) {
+		errors = append(errors, "Header must be in format: <type>[optional scope][!]: <description>")
+	}
+
+	// Rule: header-max-length
+	if isRuleEnabled(config, "header-max-length") && len(header) > 100 {
+		errors = append(errors, "Header must not exceed 100 characters")
+	}
+
+	// Rule: header-lowercase
+	if isRuleEnabled(config, "header-lowercase") && strings.ToLower(header) != header {
+		errors = append(errors, "Header (short description) must be all lowercase")
+	}
+
+	// Rule: description-case
+	if isRuleEnabled(config, "description-case") {
+		parts := strings.SplitN(header, ": ", 2)
+		if len(parts) == 2 && len(parts[1]) > 0 {
+			firstChar := parts[1][0]
+			if firstChar >= 'A' && firstChar <= 'Z' {
+				errors = append(errors, "Description must start with lowercase")
+			}
+		}
+	}
+
+	// Rule: body-line-max-length
+	if isRuleEnabled(config, "body-line-max-length") {
+		for i, line := range lines[1:] {
+			if len(line) > 100 {
+				errors = append(errors, fmt.Sprintf("Body line %d exceeds 100 characters", i+2))
+			}
+		}
+	}
+
+	// Rule: footer-format
+	if isRuleEnabled(config, "footer-format") {
+		for i, line := range lines[1:] {
+			if footerPattern.MatchString(line) && !breakingChangePattern.MatchString(line) {
+				parts := strings.SplitN(line, ":", 2)
+				if len(parts) != 2 || len(strings.TrimSpace(parts[1])) == 0 {
+					errors = append(errors, fmt.Sprintf("Footer line %d must be in format: <token>: <value>", i+2))
+				}
+			}
+		}
+	}
+
+	// Rule: breaking-change
+	if isRuleEnabled(config, "breaking-change") {
+		if strings.Contains(header, "!") && !containsBreakingChange(lines[1:]) {
+			needsBreakingChange = true
+		}
+	}
+
+	return errors, needsBreakingChange
 }
 
 func containsBreakingChange(footerLines []string) bool {
@@ -187,7 +250,31 @@ func promptForBreakingChange() string {
 }
 
 func appendBreakingChange(msg, description string) string {
-	// ... [rest of the function remains unchanged]
+	lines := strings.Split(msg, "\n")
+	breakingChangeFooter := "BREAKING CHANGE: " + description
+
+	// Check if there's already a footer
+	footerIndex := -1
+	for i, line := range lines {
+		if footerPattern.MatchString(line) {
+			footerIndex = i
+			break
+		}
+	}
+
+	if footerIndex == -1 {
+		// No footer found, append the breaking change
+		lines = append(lines, "", breakingChangeFooter)
+	} else {
+		// Footer found, insert the breaking change before it
+		newLines := make([]string, len(lines)+1)
+		copy(newLines, lines[:footerIndex])
+		newLines[footerIndex] = breakingChangeFooter
+		copy(newLines[footerIndex+1:], lines[footerIndex:])
+		lines = newLines
+	}
+
+	return strings.Join(lines, "\n")
 }
 
 func readFromStdin() (string, error) {
@@ -280,6 +367,8 @@ func getLatestRelease() (*GithubRelease, error) {
 	}
 
 	return &release, nil
+
+	return &release, nil
 }
 
 func performUpdate(release *GithubRelease) error {
@@ -294,6 +383,7 @@ func performUpdate(release *GithubRelease) error {
 
 	fmt.Println("Update successful. Please restart Gommit.")
 	os.Exit(0)
+	return nil
 	return nil
 }
 
@@ -364,7 +454,6 @@ func runGommit() error {
 	}
 
 	var commitMsgFile string
-	var isTestMode bool
 
 	if len(os.Args) < 2 {
 		fmt.Println(headerStyle.Render("No file provided. Running in test mode."))
@@ -374,7 +463,6 @@ func runGommit() error {
 		}
 		defer os.Remove(tempFile.Name()) // Clean up the temp file when done
 		commitMsgFile = tempFile.Name()
-		isTestMode = true
 
 		fmt.Println(headerStyle.Render("Enter your commit message (Ctrl+D when finished):"))
 		commitMsg, err := readFromStdin()

@@ -1,2 +1,4 @@
 build/
+/gommit-*
 .env
+.aider*
