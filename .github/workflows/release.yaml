@@ -15,6 +15,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   release:
     if: github.event.pull_request.merged == true || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -107,7 +110,7 @@ jobs:
           git config user.email "actions@github.com"
           git add CHANGELOG.md
           git commit -m "chore(release): update changelog for version ${{ steps.bump_version.outputs.new_version }}"
-          git push origin main
+          git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
 
       - name: Generate release notes
         if: steps.bump_version.outputs.bump != 'none'
@@ -124,7 +127,7 @@ jobs:
         if: steps.bump_version.outputs.bump != 'none'
         run: |
           git tag ${{ steps.bump_version.outputs.new_version }}
-          git push origin ${{ steps.bump_version.outputs.new_version }}
+          git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ${{ steps.bump_version.outputs.new_version }}
 
   build:
     needs: release
