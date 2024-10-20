@@ -51,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '16'
 
       - name: Dry-run mode active
         if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
@@ -98,6 +98,13 @@ jobs:
           # Generate full changelog
           conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
+      - name: Upload changelog artifact
+        if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog
+          path: CHANGELOG.md
+
       - name: Commit and push changelog
         if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN != 'true'
         run: |
@@ -122,6 +129,13 @@ jobs:
           cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Upload release notes artifact
+        if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: release_notes
+          path: RELEASE_NOTES.md
+
       - name: Tag new version
         if: steps.bump_version.outputs.bump != 'none' && steps.determine_dry_run.outputs.DRY_RUN != 'true'
         run: |
@@ -137,7 +151,7 @@ jobs:
           echo "- Created a release for version ${{ steps.bump_version.outputs.new_version }}."
 
   build:
-    if: needs.release.outputs.bump != 'none' && needs.release.outputs.DRY_RUN != 'true'
+    if: needs.release.outputs.bump != 'none'
     needs: release
     strategy:
       matrix:
@@ -166,7 +180,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: binaries
+          name: binaries-${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/*
 
   create_release:
@@ -177,7 +191,6 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: binaries
           path: dist
 
       - name: Create Release
@@ -189,3 +202,7 @@ jobs:
           files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release created
+        run: |
+          echo "Release ${{ needs.release.outputs.new_version }} created successfully."
