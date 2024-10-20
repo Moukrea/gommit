@@ -74,25 +74,13 @@ func getAssetURL(release *GithubRelease) (string, error) {
 	os := runtime.GOOS
 	arch := runtime.GOARCH
 
-	var assetName string
-	switch os {
-	case "linux":
-		assetName = fmt.Sprintf("gommit-linux-%s", arch)
-	case "darwin":
-		assetName = fmt.Sprintf("gommit-darwin-%s", arch)
-	case "windows":
-		assetName = fmt.Sprintf("gommit-windows-%s.exe", arch)
-	default:
-		return "", fmt.Errorf("unsupported OS: %s", os)
+	assetName := fmt.Sprintf("gommit-integration-%s-%s", os, arch)
+	if os == "windows" {
+		assetName += ".exe"
 	}
 
-	for _, asset := range release.Assets {
-		if strings.HasPrefix(asset.Name, assetName) {
-			return asset.BrowserDownloadURL, nil
-		}
-	}
-
-	return "", fmt.Errorf("no matching asset found for %s", assetName)
+	url := fmt.Sprintf("https://github.com/%s/releases/latest/download/%s", gommitRepo, assetName)
+	return url, nil
 }
 
 func downloadAndSaveBinary(url string) error {
