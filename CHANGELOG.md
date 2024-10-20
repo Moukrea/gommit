@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **core:** wring download url in binaries ([94ed96a](https://github.com/Moukrea/gommit/commit/94ed96ab66d1e177761f806a2fe9e0ed7ca84a4e))
+
+
+
+## [0.1.1](https://github.com/Moukrea/gommit/compare/0.1.0...0.1.1) (2024-10-20)
+
+
+### Bug Fixes
+
 * **ci:** include binaries in releases ([355f475](https://github.com/Moukrea/gommit/commit/355f475a94cc17c113833b0c09f653244d22aea7))
 
 
