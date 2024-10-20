@@ -14,11 +14,6 @@ on:
       - closed
 
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Run in dry-run mode (true/false)'
-        required: false
-        default: 'false'
 
 jobs:
   release:
@@ -28,7 +23,6 @@ jobs:
       new_version: ${{ steps.bump_version.outputs.new_version }}
       bump: ${{ steps.bump_version.outputs.bump }}
       release_notes: ${{ steps.generate_release_notes.outputs.release_notes }}
-      DRY_RUN: ${{ steps.determine_dry_run.outputs.DRY_RUN }}
 
     steps:
       - name: Checkout code
@@ -36,27 +30,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine DRY_RUN value
-        id: determine_dry_run
-        run: |
-          if [ "${{ github.event.inputs.dry_run }}" != "" ]; then
-            DRY_RUN="${{ github.event.inputs.dry_run }}"
-          elif [ "${{ vars.DRY_RUN }}" != "" ]; then
-            DRY_RUN="${{ vars.DRY_RUN }}"
-          else
-            DRY_RUN="false"
-          fi
-          echo "DRY_RUN=$DRY_RUN" >> $GITHUB_OUTPUT
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
-      - name: Dry-run mode active
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
-        run: |
-          echo "Dry-run mode is active. No changes will be pushed to the repository."
 
       - name: Get previous version tag
         id: get_prev_version
@@ -81,10 +58,7 @@ jobs:
             echo "bump=none" >> $GITHUB_OUTPUT
             NEW_VERSION=$CURRENT_VERSION
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            # Do not exit in dry-run mode
-            if [ "${{ steps.determine_dry_run.outputs.DRY_RUN }}" != "true" ]; then
-              exit 0
-            fi
+            exit 0
           else
             echo "Recommended bump: $BUMP"
             echo "bump=$BUMP" >> $GITHUB_OUTPUT
@@ -95,19 +69,13 @@ jobs:
           fi
 
       - name: Generate full changelog
+        if: steps.bump_version.outputs.bump != 'none'
         run: |
           npm install -g conventional-changelog-cli
           conventional-changelog -p angular -i CHANGELOG.md -s -r 0
 
-      - name: Upload changelog artifact
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: changelog
-          path: CHANGELOG.md
-
       - name: Commit and push changelog
-        if: steps.determine_dry_run.outputs.DRY_RUN != 'true' && steps.bump_version.outputs.bump != 'none'
+        if: steps.bump_version.outputs.bump != 'none'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -115,13 +83,8 @@ jobs:
           git commit -m "chore(release): update changelog for version ${{ steps.bump_version.outputs.new_version }}"
           git push origin main
 
-      - name: Echo changelog (dry-run)
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true' && steps.bump_version.outputs.bump != 'none'
-        run: |
-          echo "Changelog that would be committed in non-dry-run mode:"
-          cat CHANGELOG.md
-
       - name: Generate release notes
+        if: steps.bump_version.outputs.bump != 'none'
         id: generate_release_notes
         run: |
           npm install -g conventional-changelog-cli
@@ -131,41 +94,15 @@ jobs:
           cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Upload release notes artifact
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: release_notes
-          path: RELEASE_NOTES.md
-
       - name: Tag new version
-        if: steps.determine_dry_run.outputs.DRY_RUN != 'true' && steps.bump_version.outputs.bump != 'none'
+        if: steps.bump_version.outputs.bump != 'none'
         run: |
           git tag ${{ steps.bump_version.outputs.new_version }}
           git push origin ${{ steps.bump_version.outputs.new_version }}
 
-      - name: Echo new tag (dry-run)
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true' && steps.bump_version.outputs.bump != 'none'
-        run: |
-          echo "Tag that would be created in non-dry-run mode: ${{ steps.bump_version.outputs.new_version }}"
-
-      - name: Dry-run summary
-        if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
-        run: |
-          echo "Dry-run mode active. The following actions would have been performed:"
-          if [ "${{ steps.bump_version.outputs.bump }}" != "none" ]; then
-            echo "- Committed and pushed updated CHANGELOG.md to main."
-            echo "- Created and pushed git tag ${{ steps.bump_version.outputs.new_version }}."
-            echo "- Created a release for version ${{ steps.bump_version.outputs.new_version }}."
-            echo "Release notes that would be used:"
-            cat RELEASE_NOTES.md
-          else
-            echo "- No version bump required; no release actions would have been taken."
-          fi
-
   build:
-    if: always()
     needs: release
+    if: needs.release.outputs.bump != 'none'
     strategy:
       matrix:
         bin: [gommit, gommit-integration, gommit-downloader]
@@ -199,8 +136,8 @@ jobs:
           path: dist/*
 
   create_release:
-    if: needs.release.outputs.DRY_RUN != 'true' && needs.release.outputs.bump != 'none'
     needs: [release, build]
+    if: needs.release.outputs.bump != 'none'
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -221,4 +158,3 @@ jobs:
       - name: Release created
         run: |
           echo "Release ${{ needs.release.outputs.new_version }} created successfully."
-          
