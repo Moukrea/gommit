@@ -51,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'  # Updated Node.js version
 
       - name: Dry-run mode active
         if: steps.determine_dry_run.outputs.DRY_RUN == 'true'
@@ -69,7 +69,7 @@ jobs:
       - name: Determine version bump and new version
         id: bump_version
         run: |
-          npm install -g conventional-recommended-bump semver
+          npm install -g conventional-recommended-bump@7 semver
 
           CURRENT_VERSION="${{ steps.get_prev_version.outputs.prev_version }}"
 
@@ -181,8 +181,10 @@ jobs:
           if [ "${{ matrix.os }}" = "windows" ]; then
             OUTPUT_NAME="${OUTPUT_NAME}.exe"
           fi
-          mkdir -p dist
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ needs.release.outputs.new_version }}'" -o dist/$OUTPUT_NAME ${{ matrix.bin }}/main.go
+          cd ${{ matrix.bin }}
+          mkdir -p ../dist
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ needs.release.outputs.new_version }}'" -o ../dist/$OUTPUT_NAME
+          cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
