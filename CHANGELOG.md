@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **downloader:** unused import ([35a6b22](https://github.com/Moukrea/gommit/commit/35a6b223d9e769f8c329b44dd12d5f18fa7e9298))
+
+
+
+## [0.1.2](https://github.com/Moukrea/gommit/compare/0.1.1...0.1.2) (2024-10-20)
+
+
+### Bug Fixes
+
 * **core:** wring download url in binaries ([94ed96a](https://github.com/Moukrea/gommit/commit/94ed96ab66d1e177761f806a2fe9e0ed7ca84a4e))
 
 
