@@ -1,7 +1,7 @@
 # Gommit setup
 .PHONY: gommit-setup
 
-setup-gommit:
+gommit-setup:
 	@echo "Setting up Gommit..."
 ifeq ($(OS),Windows_NT)
 	@powershell -ExecutionPolicy Bypass -File .gommit/gommit-hook-setup.ps1
