@@ -42,7 +42,7 @@ else
 fi
 
 # Download gommit
-GOMMIT_URL="https://github.com/Moukrea/gommit/releases/download/latest/gommit-$OS-$ARCH"
+GOMMIT_URL="https://github.com/Moukrea/gommit/releases/latest/download/gommit-$OS-$ARCH"
 download_file "$GOMMIT_URL" ".gommit/gommit"
 
 # Make gommit executable

@@ -2,7 +2,7 @@
 $arch = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
 
 # Download gommit
-$gommitUrl = "https://github.com/Moukrea/gommit/releases/download/latest/gommit-windows-$arch"
+$gommitUrl = "https://github.com/Moukrea/gommit/releases/latest/download/gommit-windows-$arch"
 Invoke-WebRequest -Uri $gommitUrl -OutFile ".gommit\gommit.exe"
 
 # Prepare commit-msg hook content for gommit
