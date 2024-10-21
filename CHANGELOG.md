@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **integration:** wrong gommit download url ([2724b16](https://github.com/Moukrea/gommit/commit/2724b1621ead564f44187ef3f2b955b2e4c6de60))
+
+
+
+## [0.1.7](https://github.com/Moukrea/gommit/compare/0.1.6...0.1.7) (2024-10-21)
+
+
+### Bug Fixes
+
 * **integration:** makefile task name issue ([e79341b](https://github.com/Moukrea/gommit/commit/e79341b1b23f458733cc5b3a22afd1dad5b7276c))
 
 
