@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **integration:** makefile wrong script names ([b901912](https://github.com/Moukrea/gommit/commit/b90191247ef9f1dc31fe4dd5fc35cbab6be3c159))
+
+
+
+## [0.1.5](https://github.com/Moukrea/gommit/compare/0.1.4...0.1.5) (2024-10-21)
+
+
+### Bug Fixes
+
 * **integration:** links issues ([31460fa](https://github.com/Moukrea/gommit/commit/31460fadf66d380b099de4889054735ca9270107))
 
 
