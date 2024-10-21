@@ -3,6 +3,15 @@
 
 ### Bug Fixes
 
+* **integration:** makefile task name issue ([e79341b](https://github.com/Moukrea/gommit/commit/e79341b1b23f458733cc5b3a22afd1dad5b7276c))
+
+
+
+## [0.1.6](https://github.com/Moukrea/gommit/compare/0.1.5...0.1.6) (2024-10-21)
+
+
+### Bug Fixes
+
 * **integration:** makefile wrong script names ([b901912](https://github.com/Moukrea/gommit/commit/b90191247ef9f1dc31fe4dd5fc35cbab6be3c159))
 
 
