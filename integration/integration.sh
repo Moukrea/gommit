@@ -22,15 +22,15 @@ download_file() {
 # Create .gommit directory
 mkdir -p .gommit
 
-# Download setup.sh
-download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/setup.sh" ".gommit/setup.sh"
-chmod +x .gommit/setup.sh
+# Download gommit-hook-setup.sh
+download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/files/gommit-hook-setup.sh" ".gommit/gommit-hook-setup.sh"
+chmod +x .gommit/gommit-hook-setup.sh
 
-# Download setup.ps1
-download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/setup.ps1" ".gommit/setup.ps1"
+# Download gommit-hook-setup.ps1
+download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/files/gommit-hook-setup.ps1" ".gommit/gommit-hook-setup.ps1"
 
 # Download Makefile
-download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/Makefile" "Makefile"
+download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/files/Makefile" "Makefile"
 
 echo "Gommit integration files have been set up successfully."
 echo "You can now run 'make setup-gommit' to complete the setup."
