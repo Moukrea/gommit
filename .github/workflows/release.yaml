@@ -134,7 +134,7 @@ jobs:
     if: needs.release.outputs.bump != 'none'
     strategy:
       matrix:
-        bin: [gommit, gommit-integration, gommit-downloader]
+        bin: [gommit]
         os: [linux, darwin, windows]
         arch: [amd64, arm64]
     runs-on: ubuntu-latest

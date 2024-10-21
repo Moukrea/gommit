@@ -13,41 +13,87 @@ Gommit is a powerful tool for enforcing consistent commit message formats in you
 
 ### Integrating Gommit into Your Repository
 
-1. Download the latest `gommit-integration-<os>-<arch>` binary for your system from the [releases page](https://github.com/Moukrea/gommit/releases).
+To quickly integrate Gommit into your repository, follow these steps:
 
-2. Place the binary in the root of your repository and run it:
+1. Run the appropriate convenience script for your operating system:
 
+   #### For Unix-like systems (Linux and macOS):
+
+   If you have `curl` installed:
+
+   ```bash
+   sh -c "$(curl -L "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/integration.sh")"
    ```
-   ./gommit-integration-<os>-<arch>
+
+   If you have `wget` installed:
+
+   ```bash
+   sh -c "$(wget -O- "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/integration.sh")"
    ```
 
-3. The integration tool will set up all necessary files and scripts in your repository.
+   If you have `fetch` installed (common on FreeBSD):
 
-4. Commit and push the changes:
-
+   ```bash
+   sh -c "$(fetch -o - "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/integration.sh")"
    ```
-   git add .
+
+   #### For Windows:
+
+   Run the following command in PowerShell:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Moukrea/gommit/main/integration/integration.ps1'))"
+   ```
+
+2. After running the convenience script, review the changes made to your repository.
+
+3. Add and commit the new files:
+
+   ```bash
+   git add .gommit Makefile
    git commit -m "chore: integrate Gommit for commit message validation"
+   ```
+
+4. Push the changes to your repository:
+
+   ```bash
    git push
    ```
 
-5. Gommit is now integrated into your repository. All developers who clone or pull from this repository will automatically have Gommit set up for them.
+5. Update your repository's documentation to inform developers about Gommit. Add the following to your `README.md` or `CONTRIBUTING.md`:
 
-For those who prefer to set up Gommit manually or want to understand the integration process in detail, please refer to our [Manual Integration Guide](docs/integration.md).
+   ```markdown
+   ## Setting up Gommit
+
+   This repository uses Gommit to enforce consistent commit message formats. After cloning the repository, run the following command to set up Gommit:
+
+   `make setup-gommit`
+
+   This will download the appropriate Gommit binary for your system and set up the necessary Git hooks.
+   ```
+
+These steps ensure that Gommit is properly integrated into your repository and that developers have clear instructions for setting it up.
+
+For those who prefer to set up Gommit manually or want to understand the integration process in detail, please refer to our [Manual Integration Guide](integration/integration.md).
 
 ### What Gets Added to Your Repository
 
 The integration tool adds the following to your repository:
 
-- `.gommit/`: A directory containing Gommit downloader binaries for various platforms
-- `scripts/`: A directory containing setup scripts and Git hooks
-- Git hooks: `commit-msg`, `post-checkout`, and `post-merge`
+- `.gommit/`: A directory containing Gommit setup scripts for various platforms
+- `Makefile`: A Makefile with a target for setting up Gommit (or appends to your existing Makefile)
 
-These additions ensure that Gommit works seamlessly for all developers, regardless of their operating system.
+These additions ensure that Gommit can be easily set up by developers who clone your repository.
 
 ## For Developers
 
-If you're working on a repository that has Gommit integrated, you don't need to do anything special. Gommit will be automatically set up when you clone the repository or switch branches.
+When you clone a repository that has Gommit integrated, you'll need to set it up locally. This is typically done by running:
+
+```
+make setup-gommit
+```
+
+This command will download the appropriate Gommit binary for your system and set up the necessary Git hooks.
 
 ### Writing Commit Messages
 
@@ -86,15 +132,6 @@ Closes #123
 
 If your commit message doesn't meet the required format, Gommit will prevent the commit and provide feedback on what needs to be corrected.
 
-## Troubleshooting
-
-If you encounter any issues with Gommit:
-
-1. Ensure you have the latest version of Gommit integrated into your repository.
-2. Check that the `.gommit` directory and `scripts` directory are present in your repository root.
-3. Verify that Git hooks are properly set up by running `git config core.hooksPath`. It should point to the `scripts/git-hooks` directory in your repository.
-4. If Gommit isn't running on commit, try running `./scripts/setup-hooks.sh` from your repository root.
-
 ## Contributing
 
 Contributions to Gommit are welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more details.
@@ -110,4 +147,4 @@ If you encounter any problems or have any questions, please [open an issue](http
 Thank you for using Gommit to keep your commit history clean and informative!
 
 ---
-*Note: This project was developed with assistance from AI tools (aider.chat and Claude 3.5 Sonnet).*
+*Note: This project was developed with assistance from AI tools (aider.chat, Claude 3.5 Sonnet, GPT-4o and GPT-o1 preview).*
