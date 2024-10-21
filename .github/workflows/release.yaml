@@ -62,7 +62,7 @@ jobs:
           fi
 
           # Check for breaking changes
-          if echo "$COMMITS" | grep -qE '^[^\n]+!:' || echo "$COMMITS" | grep -q 'BREAKING CHANGE:'; then
+          if echo "$COMMITS" | grep -qE '^[^\n]+\!:' || echo "$COMMITS" | grep -q 'BREAKING CHANGE:'; then
             BUMP="major"
           # Check for features
           elif echo "$COMMITS" | grep -qE '^feat(\([^)]+\))?:'; then
