@@ -1,4 +1,13 @@
-#  (2024-10-20)
+#  (2024-10-21)
+
+
+### Bug Fixes
+
+* **ci:** breaking change regex ([54ec9ab](https://github.com/Moukrea/gommit/commit/54ec9ab7638f654c02ba812589d5b9089728fd13))
+
+
+
+## [0.1.3](https://github.com/Moukrea/gommit/compare/0.1.2...0.1.3) (2024-10-20)
 
 
 ### Bug Fixes
