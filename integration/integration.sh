@@ -33,4 +33,4 @@ download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration
 download_file "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/files/Makefile" "Makefile"
 
 echo "Gommit integration files have been set up successfully."
-echo "You can now run 'make setup-gommit' to complete the setup."
+echo "You can now run 'make gommit-setup' to complete the setup."

@@ -67,7 +67,7 @@ To quickly integrate Gommit into your repository, follow these steps:
 
    This repository uses Gommit to enforce consistent commit message formats. After cloning the repository, run the following command to set up Gommit:
 
-   `make setup-gommit`
+   `make gommit-setup`
 
    This will download the appropriate Gommit binary for your system and set up the necessary Git hooks.
    ```

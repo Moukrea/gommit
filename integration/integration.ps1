@@ -11,4 +11,4 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Moukrea/gommit/main/in
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Moukrea/gommit/main/integration/files/Makefile" -OutFile "Makefile"
 
 Write-Host "Gommit integration files have been set up successfully."
-Write-Host "You can now run 'make setup-gommit' to complete the setup."
+Write-Host "You can now run 'make gommit-setup' to complete the setup."
