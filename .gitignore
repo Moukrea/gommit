@@ -1,0 +1,6 @@
+build/
+.gommit/last_update
+.gommit/gommit
+
+.env
+.aider*
