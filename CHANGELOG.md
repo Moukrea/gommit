@@ -3,7 +3,7 @@
 
 ### Features
 
-* **init:** initial release ([a0dff8b](https://github.com/Moukrea/gommit/commit/a0dff8b45203d038641127c5e41d3a753eb7672e))
+* **init:** initial release ([bb24607](https://github.com/Moukrea/gommit/commit/bb2460778cce76a16d74227c815c7f4f43bee49e))
 
 
 
