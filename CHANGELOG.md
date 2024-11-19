@@ -1,3 +1,14 @@
+## 0.1.1
+#  (2024-11-19)
+
+
+### Bug Fixes
+
+* **ci:** sonar integration ([cf01109](https://github.com/Moukrea/gommit/commit/cf01109118ae0646cb18d5b321fa052a279dcc50))
+
+
+
+
 #  (2024-11-19)
 
 
