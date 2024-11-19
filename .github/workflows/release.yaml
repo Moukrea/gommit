@@ -114,11 +114,40 @@ jobs:
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate full changelog
+      - name: Generate new changelog entry
         if: steps.bump_version.outputs.bump != 'none'
         run: |
           npm install -g conventional-changelog-cli
-          conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+          
+          # Generate new changes in a temporary file
+          conventional-changelog -p angular -r 1 > temp_changes.md
+          
+          # If CHANGELOG.md exists, prepend new changes to it
+          if [ -f CHANGELOG.md ]; then
+            # Add version header as h2
+            echo "## ${{ steps.bump_version.outputs.new_version }}" > new_changelog.md
+            cat temp_changes.md >> new_changelog.md
+            echo >> new_changelog.md  # Add a blank line
+            cat CHANGELOG.md >> new_changelog.md
+            mv new_changelog.md CHANGELOG.md
+          else
+            # Create new changelog with version header as h2
+            echo "## ${{ steps.bump_version.outputs.new_version }}" > CHANGELOG.md
+            cat temp_changes.md >> CHANGELOG.md
+          fi
+          rm temp_changes.md
+
+      - name: Generate release notes
+        if: steps.bump_version.outputs.bump != 'none'
+        id: generate_release_notes
+        run: |
+          # Generate release notes for just this version
+          echo "## ${{ steps.bump_version.outputs.new_version }}" > RELEASE_NOTES.md
+          conventional-changelog -p angular -r 1 >> RELEASE_NOTES.md
+          
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Commit and push changelog
         if: steps.bump_version.outputs.bump != 'none'
@@ -128,17 +157,6 @@ jobs:
           git add CHANGELOG.md
           git commit -m "chore(release): update changelog for version ${{ steps.bump_version.outputs.new_version }}"
           git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
-
-      - name: Generate release notes
-        if: steps.bump_version.outputs.bump != 'none'
-        id: generate_release_notes
-        run: |
-          npm install -g conventional-changelog-cli
-          conventional-changelog -p angular -r 1 -o RELEASE_NOTES.md
-          cat RELEASE_NOTES.md
-          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Tag new version
         if: steps.bump_version.outputs.bump != 'none'
@@ -162,7 +180,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23'  # Updated Go version
+          go-version: '1.23'
 
       - name: Build binary
         run: |
