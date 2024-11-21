@@ -1,5 +1,16 @@
 # Changelog
 
+All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
+
+---
+## [0.5.1](https://github.com/moukrea/gommit/compare/0.5.0..0.5.1) (2024-11-21)
+
+### Bug Fixes
+
+- missing file - ([30a30c9](https://github.com/moukrea/gommit/commit/30a30c9382e6a79a19282d673f7e51666fd48411))
+- missing file - ([dd20b62](https://github.com/moukrea/gommit/commit/dd20b62da26a5ca5b2faac5cfb1d22c7289698f1))
+# Changelog
+
 All notable changes to this project will be documented in this file.
 
 ## [0.5.0] - 2024-11-21
