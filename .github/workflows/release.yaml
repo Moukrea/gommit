@@ -1,31 +1,57 @@
 name: Release
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Quality"]
+    types:
+      - completed
     branches:
       - main
 
 jobs:
-  release:
-    name: Release and Build Artifacts
+  check_version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Check Version
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check_bump.outputs.should_release }}
+      new_version: ${{ steps.check_bump.outputs.new_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Release Please
+        run: npm install -g release-please
+
+      - name: Check for version bump
+        id: check_bump
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          NEW_VERSION=$(release-please version --default-bump minor --latest-tag "$LATEST_TAG")
+          if [ "$LATEST_TAG" != "$NEW_VERSION" ]; then
+            echo "Version bump needed: $LATEST_TAG -> $NEW_VERSION"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "No version bump needed (staying at $LATEST_TAG)"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build
+    needs: check_version
+    if: needs.check_version.outputs.should_release == 'true'
+    strategy:
+      matrix:
+        bin: [gommit]
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout Code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Trigger Release Please
-      - name: Trigger Release Please
-        id: release
-        uses: google-github-actions/release-please-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: go
-          bump-minor-pre-major: true
-          changelog-path: CHANGELOG.md
-          skip-github-pull-request: true # Skip PR to apply directly
-
-      # Step 3: Set Up Environment for Building
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,27 +62,44 @@ jobs:
         with:
           go-version: '1.23'
 
-      # Step 4: Build Artifacts
-      - name: Build binaries
-        strategy:
-          matrix:
-            os: [linux, darwin, windows]
-            arch: [amd64, arm64]
+      - name: Build binary
         run: |
-          mkdir -p dist
-          OUTPUT_NAME="your-project-${{ matrix.os }}-${{ matrix.arch }}"
+          OUTPUT_NAME="${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}"
           if [ "${{ matrix.os }}" = "windows" ]; then
             OUTPUT_NAME="${OUTPUT_NAME}.exe"
           fi
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ steps.release.outputs.release_tag }}'" -o dist/$OUTPUT_NAME
+          cd ${{ matrix.bin }}
+          mkdir -p ../dist
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ needs.check_version.outputs.new_version }}'" -o ../dist/$OUTPUT_NAME
+          cd ..
 
-      # Step 5: Upload Artifacts to Release
-      - name: Attach binaries to release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ steps.release.outputs.release_tag }}
-          name: Release ${{ steps.release.outputs.release_tag }}
-          body_path: CHANGELOG.md
+          name: ${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*
+
+  release:
+    name: Release
+    needs: [check_version, build]
+    if: needs.check_version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "*"
+          merge-multiple: true
+
+      - name: Create GitHub Release with Release Please
+        uses: google-github-actions/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: go
+          tag-name: ${{ needs.check_version.outputs.new_version }}
+          name: Release ${{ needs.check_version.outputs.new_version }}
           files: dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
