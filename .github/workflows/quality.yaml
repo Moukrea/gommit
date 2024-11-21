@@ -18,14 +18,20 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: '20'
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.23'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Go CTRF JSON reporter 
         run: |
@@ -57,15 +63,9 @@ jobs:
 
       - name: Publish CTRF pull request comment
         run: npx github-actions-ctrf pull-request gommit/ctrf-report.json
-        if: always() && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Publish CTRF pull request comment
-      #   run: npx github-actions-ctrf pull-request gommit/ctrf-report.json --clean 
-      #   if: always()
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
