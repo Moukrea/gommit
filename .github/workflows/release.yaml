@@ -78,10 +78,10 @@ jobs:
         id: release_notes
         run: |
           # Generate release notes for this version
-          git cliff --unreleased --bump -o RELEASE_NOTES.md
+          git cliff --unreleased --bump --config .git-cliff/github.toml -o RELEASE_NOTES.md
           
           # Update CHANGELOG.md
-          git cliff --unreleased --bump --prepend CHANGELOG.md
+          git cliff --unreleased --bump --config .git-cliff/conventional.toml --prepend CHANGELOG.md
           
           # Capture release notes content
           CONTENT=$(cat RELEASE_NOTES.md)
@@ -90,9 +90,14 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
           # Add to job summary
-          echo "# Release notes for v${{ needs.check_version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY  # Empty line
+          echo "# Release notes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           cat RELEASE_NOTES.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Changelog" >> $GITHUB_STEP_SUMMARY
+          cat CHANGELOG.md >> $GITHUB_STEP_SUMMARY
 
       - name: Commit and push changelog
         run: |
