@@ -8,6 +8,8 @@ on:
       - 'CHANGELOG.md'
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - main
     paths-ignore:
       - 'CHANGELOG.md'
 
@@ -36,20 +38,12 @@ jobs:
           # Generate CTRF JSON report to publish results
           cat test-report.out | go-ctrf-json-reporter -output ctrf-report.json
 
-      # - name: Publish CTRF Test Summary Results
-      #   run: npx github-actions-ctrf summary gommit/ctrf-report.json
-      #   if: always()
-
       - name: Publish CTRF Test Results
         run: npx github-actions-ctrf gommit/ctrf-report.json
         if: always()
 
-      # - name: Publish CTRF AI Test Summary Results
-      #   run: npx github-actions-ctrf ai gommit/ctrf-report.json
-      #   if: always()
-
       - name: Publish CTRF pull request comment
-        run: npx github-actions-ctrf gommit/ctrf-report.json --pull-request
+        run: npx github-actions-ctrf pull-request gommit/ctrf-report.json --clean 
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
