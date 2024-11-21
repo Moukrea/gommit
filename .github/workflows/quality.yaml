@@ -52,7 +52,7 @@ jobs:
         run: npx github-actions-ctrf pull-request gommit/ctrf-report.json # --on-fail-only
         if: always()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GH_TOKEN }}
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
