@@ -81,7 +81,7 @@ jobs:
           git cliff --latest --tag ${{ needs.check_version.outputs.new_version }} -o RELEASE_NOTES.md
           
           # Update CHANGELOG.md
-          git cliff --tag ${{ needs.check_version.outputs.new_version }} --prepend CHANGELOG.md
+          git cliff --latest --tag ${{ needs.check_version.outputs.new_version }} --prepend CHANGELOG.md
           
           # Capture release notes content
           CONTENT=$(cat RELEASE_NOTES.md)
