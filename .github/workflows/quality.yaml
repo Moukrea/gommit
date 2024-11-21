@@ -42,11 +42,30 @@ jobs:
         run: npx github-actions-ctrf gommit/ctrf-report.json
         if: always()
 
-      - name: Publish CTRF pull request comment
-        run: npx github-actions-ctrf pull-request gommit/ctrf-report.json --clean 
-        if: always()
+      - name: Clean previous bot comments
+        if: github.event_name == 'pull_request'
+        run: |
+          # Get PR number from GitHub context
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          
+          # List all comments and delete those from github-actions[bot]
+          gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
+            | jq '.[] | select(.user.login == "github-actions[bot]") | .id' \
+            | xargs -I {} gh api repos/${{ github.repository }}/issues/comments/{} -X DELETE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish CTRF pull request comment
+        run: npx github-actions-ctrf pull-request gommit/ctrf-report.json
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Publish CTRF pull request comment
+      #   run: npx github-actions-ctrf pull-request gommit/ctrf-report.json --clean 
+      #   if: always()
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
