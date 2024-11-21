@@ -37,6 +37,10 @@ jobs:
         run: |
           go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@latest
 
+      - name: Install Go Junit report
+        run: |
+          go install github.com/jstemmer/go-junit-report/v2@latest
+
       - name: Run tests with coverage
         run: |
           cd gommit
