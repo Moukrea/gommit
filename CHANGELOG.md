@@ -1,5 +1,9 @@
 # Changelog
 
+All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# Changelog
+
 ---
 ## [0.6.0](https://github.com/moukrea/gommit/compare/0.5.1..0.6.0) (2024-11-21)
 
