@@ -9,7 +9,7 @@ Because following specs shouldn't be so **commit**-ting. Conventional Commits ma
 
 Gommit! is a powerful tool for enforcing consistent commit message formats in your Git repositories. It helps teams maintain clean and informative commit histories by validating commit messages against predefined rules.
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/Moukrea/gommit/gommit)](https://goreportcard.com/report/github.com/Moukrea/gommit/gommit) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Moukrea/gommit/gommit)](https://goreportcard.com/report/github.com/Moukrea/gommit/gommit) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Moukrea_gommit&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Moukrea_gommit) [![codecov](https://codecov.io/github/moukrea/gommit/graph/badge.svg?token=UNS4AELCET)](https://codecov.io/github/moukrea/gommit)
 
 ## Features
 

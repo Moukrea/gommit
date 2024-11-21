@@ -24,7 +24,7 @@ jobs:
           node-version: '20'
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: '1.23'
 
@@ -43,6 +43,10 @@ jobs:
           go test -v -coverprofile=coverage.out -covermode=set ./... -json > test-report.out
           # Generate CTRF JSON report to publish results
           cat test-report.out | go-ctrf-json-reporter -output ctrf-report.json
+          # Copy coverage file for Codecov integration
+          cp coverage.out ../coverage.txt
+          # Create Junit test report for Codecov integration
+          go test -v 2>&1 ./... | go-junit-report -set-exit-code > ../junit.xml
 
       - name: Publish CTRF Test Results
         run: npx github-actions-ctrf gommit/ctrf-report.json
@@ -72,3 +76,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
