@@ -1,3 +1,18 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.1.1] - 2024-11-19
+
+### 🐛 Bug Fixes
+
+- *(ci)* Sonar integration
+
+### ⚙️ Miscellaneous Tasks
+
+- *(sonar)* Integrate sonar
+- *(release)* Update changelog for version 0.1.1
+
 ## 0.1.1
 #  (2024-11-19)
 
