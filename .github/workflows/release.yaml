@@ -28,8 +28,11 @@ jobs:
       - name: Check for version bump
         id: check_bump
         run: |
+          # Generate the release PR data in dry-run mode to calculate next version
+          OUTPUT=$(release-please release-pr --dry-run --json)
+          NEW_VERSION=$(echo "$OUTPUT" | jq -r '.releases[0].tagName')
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-          NEW_VERSION=$(release-please version --default-bump minor --latest-tag "$LATEST_TAG")
+
           if [ "$LATEST_TAG" != "$NEW_VERSION" ]; then
             echo "Version bump needed: $LATEST_TAG -> $NEW_VERSION"
             echo "should_release=true" >> "$GITHUB_OUTPUT"
