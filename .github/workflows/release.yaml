@@ -81,7 +81,7 @@ jobs:
           git cliff --unreleased --bump --config .git-cliff/github.toml -o RELEASE_NOTES.md
           
           # Update CHANGELOG.md
-          git cliff --unreleased --bump --config .git-cliff/conventional.toml --prepend CHANGELOG.md
+          git cliff --unreleased --bump --config .git-cliff/keepachangelog.toml --prepend CHANGELOG.md
           
           # Capture release notes content
           CONTENT=$(cat RELEASE_NOTES.md)
