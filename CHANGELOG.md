@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2024-11-21
+
+### 🚀 Features
+
+- *(git-cliff)* Disctinctive config
+
 ## [0.2.0] - 2024-11-21
 
 ### 🚀 Features
