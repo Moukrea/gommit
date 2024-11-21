@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'CHANGELOG.md'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'CHANGELOG.md'
+
 jobs:
-  sonarcloud:
-    name: SonarQube Cloud
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,10 +25,34 @@ jobs:
         with:
           go-version: '1.23'
 
+      - name: Install Go CTRF JSON reporter 
+        run: |
+          go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@latest
+
       - name: Run tests with coverage
         run: |
           cd gommit
           go test -v -coverprofile=coverage.out -covermode=set ./... -json > test-report.out
+          # Generate CTRF JSON report to publish results
+          cat test-report.out | go-ctrf-json-reporter -output ctrf-report.json
+
+      # - name: Publish CTRF Test Summary Results
+      #   run: npx github-actions-ctrf summary gommit/ctrf-report.json
+      #   if: always()
+
+      - name: Publish CTRF Test Results
+        run: npx github-actions-ctrf gommit/ctrf-report.json
+        if: always()
+
+      # - name: Publish CTRF AI Test Summary Results
+      #   run: npx github-actions-ctrf ai gommit/ctrf-report.json
+      #   if: always()
+
+      - name: Publish CTRF pull request comment
+        run: npx github-actions-ctrf pull-request path-to-your-ctrf-report.json --on-fail-only
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
