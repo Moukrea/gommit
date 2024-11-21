@@ -47,8 +47,6 @@ jobs:
           go test -v -coverprofile=coverage.out -covermode=set ./... -json > test-report.out
           # Generate CTRF JSON report to publish results
           cat test-report.out | go-ctrf-json-reporter -output ctrf-report.json
-          # Copy coverage file for Codecov integration
-          cp coverage.out ../coverage.txt
           # Create Junit test report for Codecov integration
           go test -v 2>&1 ./... | go-junit-report -set-exit-code > ../junit.xml
 
@@ -91,3 +89,4 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: gommit/coverage.out
