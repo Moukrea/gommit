@@ -49,7 +49,7 @@ jobs:
       #   if: always()
 
       - name: Publish CTRF pull request comment
-        run: npx github-actions-ctrf pull-request gommit/ctrf-report.json --on-fail-only
+        run: npx github-actions-ctrf pull-request gommit/ctrf-report.json # --on-fail-only
         if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
