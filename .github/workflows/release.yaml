@@ -78,10 +78,10 @@ jobs:
         id: release_notes
         run: |
           # Generate release notes for this version
-          git cliff --unreleased --bump --config .git-cliff/github.toml -o RELEASE_NOTES.md
+          git cliff --unreleased --bump --config .git-cliff/release-notes.toml -o RELEASE_NOTES.md
           
           # Update CHANGELOG.md
-          git cliff --unreleased --bump --config .git-cliff/conventional.toml --prepend CHANGELOG.md
+          git cliff --unreleased --bump --config .git-cliff/changelog.toml --prepend CHANGELOG.md
           
           # Capture release notes content
           CONTENT=$(cat RELEASE_NOTES.md)
