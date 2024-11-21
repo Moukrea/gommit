@@ -78,10 +78,10 @@ jobs:
         id: release_notes
         run: |
           # Generate release notes for this version
-          git cliff --latest --tag ${{ needs.check_version.outputs.new_version }} -o RELEASE_NOTES.md
+          git cliff --unreleased --bump -o RELEASE_NOTES.md
           
           # Update CHANGELOG.md
-          git cliff --latest --tag ${{ needs.check_version.outputs.new_version }} --prepend CHANGELOG.md
+          git cliff --unreleased --bump --prepend CHANGELOG.md
           
           # Capture release notes content
           CONTENT=$(cat RELEASE_NOTES.md)
@@ -140,7 +140,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: ${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/*
 
   release:
@@ -154,11 +154,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: binaries
           path: dist
+          pattern: "*"
+          merge-multiple: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
