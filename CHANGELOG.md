@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2024-11-21
+
+### 🚀 Features
+
+- *(ci)* Test new workflow
+- *(ci)* New release workflow
+- Output release notes
+
+### 🐛 Bug Fixes
+
+- Git-cliff missing arg
+- Build fix
+
+### ⚙️ Miscellaneous Tasks
+
+- *(fix)* Ctrf report path
+- *(fix)* Ctrf report comment, always
+- *(fix)* Custom token to comment on pr
+- *(fix)* Rollback to standard github token
+- *(fix)* Full ctrf report on pull request
+- *(fix)* Clean previous ctrf report comments
+- *(fix)* Clean previous ctrf report comments
+- *(release)* Update changelog for version 0.2.0
+
 ## [0.1.1] - 2024-11-19
 
 ### 🐛 Bug Fixes
