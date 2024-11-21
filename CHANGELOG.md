@@ -1,5 +1,11 @@
 # Changelog
 
+---
+## [0.6.0](https://github.com/moukrea/gommit/compare/0.5.1..0.6.0) (2024-11-21)
+
+### Features
+
+- **(changelog)** conventional changelogs ([759a9fc](https://github.com/moukrea/gommit/commit/759a9fcf0b8924aad4133e36b01ec7b99e40c0fc))
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 ---
