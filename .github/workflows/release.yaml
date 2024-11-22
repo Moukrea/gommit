@@ -31,7 +31,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: go
           package-name: gommit
-          command: manifest
 
   merge-release:
     needs: [release-please]
@@ -40,7 +39,6 @@ jobs:
     steps:
       - name: Merge Release PR
         env:
-          # Use the custom token instead of GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.CUSTOM_GH_TOKEN }}
           PR_NUMBER: ${{ fromJson(needs.release-please.outputs.pr).number }}
         run: |
@@ -51,7 +49,7 @@ jobs:
             /repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews \
             -f event='APPROVE'
 
-          # Enable auto-merge
+          # Merge PR
           gh api \
             --method PUT \
             -H "Accept: application/vnd.github.v3+json" \
