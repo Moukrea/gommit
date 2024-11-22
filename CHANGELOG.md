@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2](https://github.com/moukrea/gommit/compare/v0.2.1...v0.2.2) (2024-11-22)
+
+
+### Bug Fixes
+
+* bad filename ([0b5456c](https://github.com/moukrea/gommit/commit/0b5456ccd628e61b0cb7323ea1ae0f530a02ae65))
+* commit requiring bump ([a796666](https://github.com/moukrea/gommit/commit/a796666dcabb1378b825e155a3844d26bad3b3a6))
+
 ## [0.2.1](https://github.com/moukrea/gommit/compare/v0.2.0...v0.2.1) (2024-11-22)
 
 
