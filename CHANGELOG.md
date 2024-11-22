@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4](https://github.com/moukrea/gommit/compare/v0.2.3...v0.2.4) (2024-11-22)
+
+
+### Bug Fixes
+
+* correct labels ([1d7c483](https://github.com/moukrea/gommit/commit/1d7c4839515b8deedf7140650d1898b68d89decb))
+
 ## [0.2.3](https://github.com/moukrea/gommit/compare/v0.2.2...v0.2.3) (2024-11-22)
 
 
