@@ -30,18 +30,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: go
           package-name: gommit
-          
-      # Auto-approve and merge if a release PR was created
-      - name: Auto-approve and merge Release PR
+          # Skip PR approval since we can't approve our own PR
+          # Instead, configure Release Please to merge when ready
+          fork: false
+          default-branch: main
+
+      # Merge the release PR if one was created
+      - name: Merge Release PR
         if: steps.release.outputs.pr
         run: |
           PR_NUMBER=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.number')
-          gh pr review $PR_NUMBER --approve
           gh pr merge $PR_NUMBER --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Build job that runs only when release-please creates a PR
+  # Rest of the workflow remains the same...
   build:
     needs: [release-please]
     if: needs.release-please.outputs.pr
