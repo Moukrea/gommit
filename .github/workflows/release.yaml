@@ -1,50 +1,45 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ["Quality"]
-    types:
-      - completed
+  push:
     branches:
       - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  check_version:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Check Version
+  release-please:
     runs-on: ubuntu-latest
     outputs:
-      should_release: ${{ steps.check_bump.outputs.should_release }}
-      new_version: ${{ steps.check_bump.outputs.new_version }}
+      release_created: ${{ steps.release.outputs.release_created }}
+      pr: ${{ steps.release.outputs.pr }}
+      pr_number: ${{ steps.release.outputs.pr && fromJson(steps.release.outputs.pr).number || '' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: googleapis/release-please-action@v4
+        id: release
         with:
-          fetch-depth: 0
-
-      - name: Install Release Please
-        run: npm install -g release-please
-
-      - name: Check for version bump
-        id: check_bump
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: go
+          package-name: gommit
+          
+      # Auto-approve and merge if a release PR was created
+      - name: Auto-approve and merge Release PR
+        if: steps.release.outputs.pr
         run: |
-          # Generate the release PR data in dry-run mode to calculate next version
-          OUTPUT=$(release-please release-pr --dry-run --json)
-          NEW_VERSION=$(echo "$OUTPUT" | jq -r '.releases[0].tagName')
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          PR_NUMBER=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.number')
+          gh pr review $PR_NUMBER --approve
+          gh pr merge $PR_NUMBER --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          if [ "$LATEST_TAG" != "$NEW_VERSION" ]; then
-            echo "Version bump needed: $LATEST_TAG -> $NEW_VERSION"
-            echo "should_release=true" >> "$GITHUB_OUTPUT"
-            echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          else
-            echo "No version bump needed (staying at $LATEST_TAG)"
-            echo "should_release=false" >> "$GITHUB_OUTPUT"
-
+  # Build job that runs only when release-please creates a PR
   build:
-    name: Build
-    needs: check_version
-    if: needs.check_version.outputs.should_release == 'true'
+    needs: [release-please]
+    if: needs.release-please.outputs.pr
     strategy:
       matrix:
         bin: [gommit]
@@ -54,12 +49,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+        
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -73,8 +63,7 @@ jobs:
           fi
           cd ${{ matrix.bin }}
           mkdir -p ../dist
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'main.version=${{ needs.check_version.outputs.new_version }}'" -o ../dist/$OUTPUT_NAME
-          cd ..
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ../dist/$OUTPUT_NAME
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -82,15 +71,12 @@ jobs:
           name: ${{ matrix.bin }}-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/*
 
-  release:
-    name: Release
-    needs: [check_version, build]
-    if: needs.check_version.outputs.should_release == 'true'
+  # Add artifacts to the release after PR is merged
+  upload-artifacts:
+    needs: [release-please, build]
+    if: needs.release-please.outputs.release_created
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -98,11 +84,14 @@ jobs:
           pattern: "*"
           merge-multiple: true
 
-      - name: Create GitHub Release with Release Please
-        uses: google-github-actions/release-please-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: go
-          tag-name: ${{ needs.check_version.outputs.new_version }}
-          name: Release ${{ needs.check_version.outputs.new_version }}
-          files: dist/*
+      - name: Upload artifacts to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the tag name from the latest release
+          TAG=$(gh release list -L 1 | cut -f 1)
+          
+          # Upload each artifact to the release
+          for file in dist/*; do
+            gh release upload "$TAG" "$file"
+          done
