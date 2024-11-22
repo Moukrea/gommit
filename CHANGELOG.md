@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1](https://github.com/moukrea/gommit/compare/v0.2.0...v0.2.1) (2024-11-22)
+
+
+### Bug Fixes
+
+* commit requiring bump ([a9aa4a2](https://github.com/moukrea/gommit/commit/a9aa4a2f98efb726289c49d6dca1619139212315))
+
 ## [0.2.0](https://github.com/moukrea/gommit/compare/0.1.0...v0.2.0) (2024-11-22)
 
 
