@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0](https://github.com/moukrea/gommit/compare/v0.3.0...v0.4.0) (2024-11-22)
+
+
+### Features
+
+* release please basic integration ([4756b55](https://github.com/moukrea/gommit/commit/4756b55ab31568eae1a19f33f3df5ee69d5ed419))
+
 ## [0.3.0](https://github.com/moukrea/gommit/compare/v0.2.4...v0.3.0) (2024-11-22)
 
 
