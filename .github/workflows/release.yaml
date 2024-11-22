@@ -40,7 +40,8 @@ jobs:
     steps:
       - name: Merge Release PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use the custom token instead of GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GH_TOKEN }}
           PR_NUMBER: ${{ fromJson(needs.release-please.outputs.pr).number }}
         run: |
           # Approve PR
